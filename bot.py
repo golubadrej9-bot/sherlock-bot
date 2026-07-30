@@ -4,7 +4,6 @@
 import telebot
 import time
 import random
-import psycopg2
 
 BOT_TOKEN = "8897234847:AAGxGxpixo2746NwJP_Hw7n4wXQ-tRzWD2I"
 bot = telebot.TeleBot(BOT_TOKEN)
