@@ -5,24 +5,10 @@ import telebot
 import time
 import random
 import requests
-import threading
-from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 BOT_TOKEN = "8897234847:AAGxGxpixo2746NwJP_Hw7n4wXQ-tRzWD2I"
 bot = telebot.TeleBot(BOT_TOKEN)
-app = Flask(__name__)
-
-# ============================================
-# ВЕБ-СЕРВЕР ДЛЯ RENDER (порт 10000)
-# ============================================
-
-@app.route('/')
-def index():
-    return '🕵️ SHERLOCK V2.0 работает 24/7!'
-
-def run_web():
-    app.run(host='0.0.0.0', port=10000, debug=False)
 
 # ============================================
 # SHERLOCK
@@ -176,15 +162,9 @@ def handle_message(message):
 # ============================================
 
 if __name__ == '__main__':
-    # Запускаем веб-сервер в отдельном потоке
-    web_thread = threading.Thread(target=run_web, daemon=True)
-    web_thread.start()
-    print("🌐 Веб-сервер запущен на порту 10000")
-    
-    # Запускаем бота
     while True:
         try:
-            print("🕵️ SHERLOCK V2.0 запущен!")
+            print("🕵️ SHERLOCK V2.0 запущен на Render Worker!")
             bot.polling(none_stop=True)
         except Exception as e:
             print(f"Ошибка: {e}")
