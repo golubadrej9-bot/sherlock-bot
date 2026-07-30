@@ -14,7 +14,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
 
 # ============================================
-# ВЕБ-СЕРВЕР ДЛЯ RENDER
+# ВЕБ-СЕРВЕР ДЛЯ RENDER (порт 10000)
 # ============================================
 
 @app.route('/')
@@ -22,7 +22,7 @@ def index():
     return '🕵️ SHERLOCK V2.0 работает 24/7!'
 
 def run_web():
-    app.run(host='0.0.0.0', port=10000)
+    app.run(host='0.0.0.0', port=10000, debug=False)
 
 # ============================================
 # SHERLOCK
@@ -176,8 +176,10 @@ def handle_message(message):
 # ============================================
 
 if __name__ == '__main__':
-    # Запускаем веб-сервер для Render
-    threading.Thread(target=run_web, daemon=True).start()
+    # Запускаем веб-сервер в отдельном потоке
+    web_thread = threading.Thread(target=run_web, daemon=True)
+    web_thread.start()
+    print("🌐 Веб-сервер запущен на порту 10000")
     
     # Запускаем бота
     while True:
