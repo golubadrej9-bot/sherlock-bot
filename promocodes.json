@@ -1,0 +1,17 @@
+{
+    "220811": {
+        "bonus": 3,
+        "description": "Базовый промокод",
+        "used": false
+    },
+    "22081110": {
+        "bonus": 10,
+        "description": "Расширенный промокод",
+        "used": false
+    },
+    "gsa22": {
+        "bonus": 3,
+        "description": "Специальный промокод",
+        "used": false
+    }
+}
