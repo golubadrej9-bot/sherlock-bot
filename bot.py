@@ -5,13 +5,27 @@ import telebot
 import time
 import random
 import requests
+import threading
+from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 BOT_TOKEN = "8897234847:AAGxGxpixo2746NwJP_Hw7n4wXQ-tRzWD2I"
 bot = telebot.TeleBot(BOT_TOKEN)
+app = Flask(__name__)
 
 # ============================================
-# РЕЖИМ 1: SHERLOCK (поиск по номеру/почте)
+# ВЕБ-СЕРВЕР ДЛЯ RENDER
+# ============================================
+
+@app.route('/')
+def index():
+    return '🕵️ SHERLOCK V2.0 работает 24/7!'
+
+def run_web():
+    app.run(host='0.0.0.0', port=10000)
+
+# ============================================
+# SHERLOCK
 # ============================================
 
 def sherlock_search(query):
@@ -29,7 +43,7 @@ def sherlock_search(query):
     }
 
 # ============================================
-# РЕЖИМ 2: MAP SEARCH (поиск адреса)
+# MAP SEARCH
 # ============================================
 
 def search_address(query):
@@ -57,17 +71,12 @@ def search_address(query):
         print(f"Ошибка карт: {e}")
         return None
 
-def get_map_urls(lat, lon, address):
-    """Возвращает ссылки на все карты"""
-    return {
+def get_map_buttons(lat, lon):
+    urls = {
         'yandex': f"https://yandex.ru/maps/?pt={lon},{lat}&z=17&l=map",
         '2gis': f"https://2gis.ru/geo/{lat},{lon}",
         'google': f"https://www.google.com/maps?q={lat},{lon}"
     }
-
-def get_map_buttons(lat, lon, address):
-    """Кнопки с картами"""
-    urls = get_map_urls(lat, lon, address)
     
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
@@ -80,7 +89,7 @@ def get_map_buttons(lat, lon, address):
     return keyboard
 
 # ============================================
-# КОМАНДЫ БОТА
+# КОМАНДЫ
 # ============================================
 
 @bot.message_handler(commands=['start'])
@@ -92,9 +101,7 @@ def start(message):
         "1️⃣ SHERLOCK — поиск по номеру/почте\n"
         "   Пример: +79991234567\n\n"
         "2️⃣ MAP SEARCH — поиск адреса\n"
-        "   Пример: Москва Кремль\n\n"
-        "3️⃣ /map [адрес] — открыть карту\n"
-        "   Пример: /map Красная площадь"
+        "   Пример: Москва Кремль"
     )
 
 @bot.message_handler(commands=['map'])
@@ -111,15 +118,8 @@ def map_command(message):
     result = search_address(query)
     
     if result:
-        keyboard = get_map_buttons(result['lat'], result['lon'], result['address'])
-        
-        reply = (
-            f"✅ НАЙДЕНО:\n\n"
-            f"📍 {result['address']}\n\n"
-            f"🗺️ Координаты:\n"
-            f"   {result['lat']}, {result['lon']}\n\n"
-            f"Выберите карту:"
-        )
+        keyboard = get_map_buttons(result['lat'], result['lon'])
+        reply = f"✅ НАЙДЕНО:\n\n📍 {result['address']}\n\n🗺️ {result['lat']}, {result['lon']}\n\nВыберите карту:"
         bot.reply_to(message, reply, reply_markup=keyboard)
     else:
         bot.reply_to(message, "❌ Адрес не найден")
@@ -132,7 +132,7 @@ def handle_message(message):
         bot.reply_to(message, "❌ Пустой запрос")
         return
     
-    # ===== MAP SEARCH (адрес) =====
+    # MAP SEARCH
     if any(c.isalpha() for c in query) and len(query) > 5:
         bot.reply_to(message, f"🗺️ Ищу адрес: {query}...")
         time.sleep(1)
@@ -140,19 +140,12 @@ def handle_message(message):
         result = search_address(query)
         
         if result:
-            keyboard = get_map_buttons(result['lat'], result['lon'], result['address'])
-            
-            reply = (
-                f"✅ НАЙДЕНО:\n\n"
-                f"📍 {result['address']}\n\n"
-                f"🗺️ Координаты:\n"
-                f"   {result['lat']}, {result['lon']}\n\n"
-                f"Выберите карту:"
-            )
+            keyboard = get_map_buttons(result['lat'], result['lon'])
+            reply = f"✅ НАЙДЕНО:\n\n📍 {result['address']}\n\n🗺️ {result['lat']}, {result['lon']}\n\nВыберите карту:"
             bot.reply_to(message, reply, reply_markup=keyboard)
             return
     
-    # ===== SHERLOCK (номер/почта) =====
+    # SHERLOCK
     if any(char.isdigit() for char in query) or '@' in query:
         bot.reply_to(message, f"🔍 SHERLOCK: ищу {query}...")
         time.sleep(1)
@@ -171,13 +164,11 @@ def handle_message(message):
         bot.reply_to(message, reply)
         return
     
-    # Если ничего не подошло
     bot.reply_to(
         message,
         "❌ Я не понял.\n\n"
         "🔍 SHERLOCK: +79991234567 или test@mail.ru\n"
-        "🗺️ MAP SEARCH: Москва Кремль\n"
-        "📌 /map [адрес]"
+        "🗺️ MAP SEARCH: Москва Кремль"
     )
 
 # ============================================
@@ -185,11 +176,13 @@ def handle_message(message):
 # ============================================
 
 if __name__ == '__main__':
+    # Запускаем веб-сервер для Render
+    threading.Thread(target=run_web, daemon=True).start()
+    
+    # Запускаем бота
     while True:
         try:
             print("🕵️ SHERLOCK V2.0 запущен!")
-            print("  1️⃣ SHERLOCK — поиск по номеру/почте")
-            print("  2️⃣ MAP SEARCH — поиск адреса (Яндекс/2ГИС/Google)")
             bot.polling(none_stop=True)
         except Exception as e:
             print(f"Ошибка: {e}")
