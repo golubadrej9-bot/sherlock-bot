@@ -10,7 +10,7 @@ BOT_TOKEN = "8897234847:AAGxGxpixo2746NwJP_Hw7n4wXQ-tRzWD2I"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # ============================================
-# ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ (прямая ссылка)
+# ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ
 # ============================================
 
 DATABASE_URL = "postgresql://sherlock_user:oIWqt95Q6R3aQXekWuRT2ZjR1RBt0XUE@dpg-d91m15ijnfac73as0mtg-a:5432/sherlock_db_gcp5"
@@ -110,13 +110,7 @@ def handle_message(message):
     if results:
         reply = "✅ НАЙДЕНО:\n\n"
         for user in results:
-            reply += (
-                f"👤 {user[3]}\n"
-                f"📱 {user[1]}\n"
-                f"📧 {user[2]}\n"
-                f"🎂 {user[4]} лет\n"
-                f"📍 {user[5]}\n\n"
-            )
+            reply += f"👤 {user[3]}\n📱 {user[1]}\n📧 {user[2]}\n🎂 {user[4]} лет\n📍 {user[5]}\n\n"
     else:
         reply = "❌ Не найдено в базе\n\nДанные демонстрационные!"
     
